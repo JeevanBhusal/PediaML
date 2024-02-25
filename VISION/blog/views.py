@@ -5,7 +5,8 @@ from requests import post
 import pyttsx3
 from django.shortcuts import redirect
 from .models import Postblog
-
+from django.urls import reverse
+import googletrans
 from blog.code import SentimentAnalyzer
 from .models import BlogComment
 from .models import Postblog
@@ -103,17 +104,35 @@ def sentiment(request):
 
 # checking using pyttx modoule
 
+# def translate_text(request):
+#             if request.method == "POST":
+#                 lang = request.POST.get("lang")
+#                 data = request.POST.get("content")
+#                 translator = googletrans.Translator()
+#                 translated_text = translator.translate(data, dest=lang)
+#             return translated_text.text
+def translate_text(text, target_lang):
+    translator = googletrans.Translator()
+    translated_text = translator.translate(text, dest=target_lang)
+    return translated_text.text
+
+
 def translate_app(request):
     if request.method == "POST":
         lang = request.POST.get("lang")
         data = request.POST.get("content")
 
+        
+
         # Translate text to the desired language (if needed)
         # You can add translation code here if required
-        translated_text = data
+        # translated_text = data
+        translated_text = translate_text(data,lang)
 
-        # Initialize the text-to-speech engine
+        # Initialize the text-to-speech engine within the view function
         engine = pyttsx3.init()
+        # set lanaguauge
+        engine.setProperty('voice', f'{lang}')
 
         # Set properties (optional)
         # engine.setProperty('rate', 150)  # Speed of speech
@@ -123,12 +142,25 @@ def translate_app(request):
         # engine.setProperty('language', lang)
 
         # Say the translated text
-        engine.say(translated_text)
+        try:
+            engine.say(translated_text)
 
-        # Wait for speech to finish
-        engine.runAndWait()
+            # Wait for speech to finish
+            engine.runAndWait()
+        except RuntimeError as e:
+            if str(e) == 'run loop already started':
+                engine.stop()
+                engine.runAndWait()
+            else:
+                raise e
 
         # Redirect back to the original page (you may want to modify this)
-        return redirect(f"/blog/{Postblog.slug}")
+        # return redirect(reverse('blog', kwargs={'slug': Postblog.slug}))
+        # return redirect(f"/blog/{Postblog.slug}")
+            print(translated_text)
+        return HttpResponse("this is translated data/n" + translated_text)
+        # return redirect("./templates/home/home.html")
 
+    # return HttpResponse("This endpoint only supports POST requests.")
     return redirect(f"/blog/{Postblog.slug}")
+
