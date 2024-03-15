@@ -1,4 +1,4 @@
-# MLPEDIA
+# PEDIAML
 A blog based web application that allows to do summarization on the blog content on analyzing the comment done by users and translate the content into any desired language with a translated text.
 
 ## To ensure the library file used to enable voice on the system.
